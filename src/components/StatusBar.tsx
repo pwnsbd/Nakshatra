@@ -60,7 +60,7 @@ function StatusBar({
 							onChange={(event) =>
 								onViewChange?.(event.target.value as SurfaceView)
 							}
-							className="rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-sky-50 outline-none sm:text-[11px]"
+							className="themed-select themed-select-pill themed-select-status px-3 py-1 pr-8 text-[10px] font-semibold uppercase tracking-[0.24em] text-sky-50 sm:text-[11px]"
 						>
 							<option value="sky">Sky View</option>
 							<option value="earth">Earth View</option>

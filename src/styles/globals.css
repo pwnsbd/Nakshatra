@@ -33,7 +33,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
 	font: inherit;
 }
 
@@ -51,6 +52,86 @@ a:focus-visible {
 input::-webkit-calendar-picker-indicator {
 	filter: invert(0.9) brightness(1.1);
 	cursor: pointer;
+}
+
+select {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+}
+
+select::-ms-expand {
+	display: none;
+}
+
+.themed-select {
+	background-repeat: no-repeat;
+	background-position: right 0.9rem center;
+	background-size: 0.8rem;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23bae6fd' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	cursor: pointer;
+}
+
+.themed-select option {
+	background: #081224;
+	color: #e0f2fe;
+}
+
+.themed-select-pill {
+	border-radius: 999px;
+}
+
+.themed-select-status {
+	border: 1px solid rgba(125, 211, 252, 0.3);
+	background:
+		radial-gradient(circle at top, rgba(125, 211, 252, 0.22), transparent 70%),
+		linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(30, 41, 59, 0.94));
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 0 0 1px rgba(56, 189, 248, 0.08),
+		0 12px 28px rgba(8, 47, 73, 0.22);
+	transition:
+		border-color 180ms ease,
+		box-shadow 180ms ease,
+		transform 180ms ease,
+		filter 180ms ease;
+}
+
+.themed-select-status:hover,
+.themed-select-status:focus {
+	border-color: rgba(125, 211, 252, 0.5);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.1),
+		0 0 0 4px rgba(14, 165, 233, 0.14),
+		0 18px 36px rgba(8, 47, 73, 0.26);
+	transform: translateY(-1px);
+	filter: brightness(1.04);
+}
+
+.themed-select-input {
+	background-image:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23fcd34d' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+		linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.88)),
+		rgba(2, 6, 23, 0.45);
+	background-position:
+		right 0.9rem center,
+		center,
+		center;
+	background-size: 0.8rem, auto, auto;
+	border-color: rgba(251, 191, 36, 0.16);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		0 12px 26px rgba(2, 6, 23, 0.16),
+		0 0 0 1px rgba(251, 191, 36, 0.04);
+}
+
+.themed-select-input:hover,
+.themed-select-input:focus {
+	border-color: rgba(251, 191, 36, 0.38);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.07),
+		0 0 0 4px rgba(251, 191, 36, 0.12),
+		0 20px 40px rgba(120, 53, 15, 0.2);
 }
 
 .panel {

@@ -29,10 +29,14 @@ const TIMELINE_YEAR_SPAN = 10;
 const REWIND_SAMPLE_COUNT = 360;
 type SurfaceView = "sky" | "earth";
 
+const ACTIVE_VIEW_STORAGE_KEY = "nakshatra-active-view";
+
 function describeViewportMode(mode: AppMode) {
 	switch (mode) {
 		case "rewinding":
 			return "Rewinding to birth snapshot";
+		case "returning-live":
+			return "Returning to live sky";
 		case "birth-snapshot":
 			return "Birth snapshot locked";
 		case "error":
@@ -58,7 +62,12 @@ function toSnapshotTimestampUtc(
 		}).utcDateTime;
 	}
 
-	if (mode === "live" || mode === "input" || mode === "error") {
+	if (
+		mode === "live" ||
+		mode === "input" ||
+		mode === "error" ||
+		mode === "returning-live"
+	) {
 		return currentUtc;
 	}
 
@@ -285,10 +294,23 @@ function App() {
 	});
 	const [hasRenderedSnapshot, setHasRenderedSnapshot] = useState(false);
 	const [snapshotRetryToken, setSnapshotRetryToken] = useState(0);
-	const [activeView, setActiveView] = useState<SurfaceView>("sky");
+	const [activeView, setActiveView] = useState<SurfaceView>(() => {
+		if (typeof window === "undefined") {
+			return "sky";
+		}
+
+		const savedView = window.localStorage.getItem(ACTIVE_VIEW_STORAGE_KEY);
+		return savedView === "earth" ? "earth" : "sky";
+	});
 	const astronomyProvider = useMemo<AstronomyProvider>(
 		() => createAstronomyProvider(),
 		[],
+	);
+	const activeTimestampUtc = toSnapshotTimestampUtc(
+		mode,
+		timelineProgress,
+		birthInput,
+		currentUtc,
 	);
 
 	useEffect(() => {
@@ -365,7 +387,15 @@ function App() {
 	}, []);
 
 	useEffect(() => {
-		if (mode === "rewinding" || !sceneRef.current) {
+		window.localStorage.setItem(ACTIVE_VIEW_STORAGE_KEY, activeView);
+	}, [activeView]);
+
+	useEffect(() => {
+		if (
+			mode === "rewinding" ||
+			mode === "returning-live" ||
+			!sceneRef.current
+		) {
 			return undefined;
 		}
 
@@ -482,7 +512,9 @@ function App() {
 	useEffect(() => {
 		sceneRef.current?.setFocusEarthMarker(mode === "birth-snapshot");
 		sceneRef.current?.setPlanetMotionFrozen(mode === "birth-snapshot");
-		sceneRef.current?.setCameraControlsEnabled(mode !== "rewinding");
+		sceneRef.current?.setCameraControlsEnabled(
+			mode !== "rewinding" && mode !== "returning-live",
+		);
 	}, [mode]);
 
 	useEffect(() => {
@@ -499,7 +531,7 @@ function App() {
 	}, [mode]);
 
 	useEffect(() => {
-		if (mode !== "rewinding" || !birthInput) {
+		if ((mode !== "rewinding" && mode !== "returning-live") || !birthInput) {
 			return undefined;
 		}
 
@@ -512,7 +544,10 @@ function App() {
 		const runRewind = async () => {
 			try {
 				setViewportStatus({
-					message: "Calculating birth sky…",
+					message:
+						mode === "returning-live"
+							? "Restoring live sky…"
+							: "Calculating birth sky…",
 					tone: "loading",
 					blocking: true,
 				});
@@ -537,13 +572,49 @@ function App() {
 					return;
 				}
 
-				sceneRef.current?.setSolarSystemSnapshot(liveSnapshot);
+				const startsFromBirthSnapshot = mode === "returning-live";
+				const startSnapshot = startsFromBirthSnapshot
+					? rewoundSnapshot
+					: liveSnapshot;
+				const endSnapshot = startsFromBirthSnapshot
+					? liveSnapshot
+					: rewoundSnapshot;
+				const getSnapshotAtProgress = (progress: number) =>
+					startsFromBirthSnapshot
+						? rewindInterpolationPlan.getSnapshotAtProgress(1 - progress)
+						: rewindInterpolationPlan.getSnapshotAtProgress(progress);
+				const completeTransition = () => {
+					sceneRef.current?.setSolarSystemSnapshot(endSnapshot);
+					setTransitionProgress(1);
+					setTimelineProgress(startsFromBirthSnapshot ? 100 : 0);
+					if (startsFromBirthSnapshot) {
+						useNakshatraStore.setState((state) => ({
+							mode: "live",
+							currentSnapshot: null,
+							birthSnapshot: null,
+							transitionProgress: 0,
+							isRewindPaused: false,
+							timelineProgress: 24,
+							selectedPlanetId: null,
+							resetVersion: state.resetVersion + 1,
+						}));
+					} else {
+						completeBirthSnapshot();
+					}
+					setHasRenderedSnapshot(true);
+					setViewportStatus(null);
+					sceneRef.current?.setCameraControlsEnabled(true);
+				};
+
+				sceneRef.current?.setSolarSystemSnapshot(startSnapshot);
 				setCurrentUtc(nowUtc);
 				setTransitionProgress(0);
-				setTimelineProgress(100);
+				setTimelineProgress(startsFromBirthSnapshot ? 0 : 100);
 
 				setViewportStatus({
-					message: "Rewinding time…",
+					message: startsFromBirthSnapshot
+						? "Returning to live sky…"
+						: "Rewinding time…",
 					tone: "loading",
 					blocking: false,
 				});
@@ -557,13 +628,7 @@ function App() {
 							return;
 						}
 
-						sceneRef.current?.setSolarSystemSnapshot(rewoundSnapshot);
-						setTransitionProgress(1);
-						setTimelineProgress(0);
-						completeBirthSnapshot();
-						setHasRenderedSnapshot(true);
-						setViewportStatus(null);
-						sceneRef.current?.setCameraControlsEnabled(true);
+						completeTransition();
 						window.requestAnimationFrame(() => {
 							viewportPanel?.classList.remove("viewport-fade");
 						});
@@ -584,9 +649,13 @@ function App() {
 
 						const progress = tweenState.progress;
 						setTransitionProgress(progress);
-						setTimelineProgress(Math.round((1 - progress) * 100));
+						setTimelineProgress(
+							startsFromBirthSnapshot
+								? Math.round(progress * 100)
+								: Math.round((1 - progress) * 100),
+						);
 						sceneRef.current?.setSolarSystemSnapshot(
-							rewindInterpolationPlan.getSnapshotAtProgress(progress),
+							getSnapshotAtProgress(progress),
 						);
 					},
 					onComplete: () => {
@@ -594,13 +663,7 @@ function App() {
 							return;
 						}
 
-						sceneRef.current?.setSolarSystemSnapshot(rewoundSnapshot);
-						setTransitionProgress(1);
-						setTimelineProgress(0);
-						completeBirthSnapshot();
-						setHasRenderedSnapshot(true);
-						setViewportStatus(null);
-						sceneRef.current?.setCameraControlsEnabled(true);
+						completeTransition();
 					},
 				});
 
@@ -611,7 +674,10 @@ function App() {
 			} catch (error) {
 				console.error("[Nakshatra] failed to run rewind animation", error);
 				setViewportStatus({
-					message: "We couldn’t rewind to that birth moment.",
+					message:
+						mode === "returning-live"
+							? "We couldn’t restore the live sky just now."
+							: "We couldn’t rewind to that birth moment.",
 					detail:
 						"Please check the timezone and birth details, then try again. You don’t need to refresh the page.",
 					tone: "error",
@@ -646,12 +712,12 @@ function App() {
 			return;
 		}
 
-		if (mode === "rewinding" && isRewindPaused) {
+		if ((mode === "rewinding" || mode === "returning-live") && isRewindPaused) {
 			tween.pause();
 			return;
 		}
 
-		if (mode === "rewinding") {
+		if (mode === "rewinding" || mode === "returning-live") {
 			tween.resume();
 		}
 	}, [isRewindPaused, mode]);
@@ -682,6 +748,21 @@ function App() {
 				updateBirthDetails({ locationLabel });
 			},
 		);
+	}
+
+	function handleOpenSkyViewFromEarth() {
+		setActiveView("sky");
+		if (!birthInput) {
+			return;
+		}
+
+		if (mode === "rewinding" || mode === "returning-live") {
+			return;
+		}
+
+		if (mode !== "birth-snapshot") {
+			handleBirthSubmit(birthInput);
+		}
 	}
 
 	return (
@@ -809,7 +890,10 @@ function App() {
 								</div>
 								{isMobileLayout ? (
 									<div className="absolute inset-x-3 bottom-3 z-20 space-y-3 sm:hidden">
-										<TimelineScrubber currentUtc={currentUtc} />
+										<TimelineScrubber
+											currentUtc={currentUtc}
+											activeTimestampUtc={activeTimestampUtc}
+										/>
 										<ControlDock />
 									</div>
 								) : null}
@@ -821,7 +905,10 @@ function App() {
 										<ControlDock compact vertical />
 									</div>
 									<div className="md:col-start-1 md:row-start-2">
-										<TimelineScrubber currentUtc={currentUtc} />
+										<TimelineScrubber
+											currentUtc={currentUtc}
+											activeTimestampUtc={activeTimestampUtc}
+										/>
 									</div>
 								</>
 							) : null}
@@ -848,7 +935,7 @@ function App() {
 								</div>
 								<button
 									type="button"
-									onClick={() => setActiveView("sky")}
+									onClick={handleOpenSkyViewFromEarth}
 									className="rounded-full border border-sky-300/20 bg-sky-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-50 transition hover:bg-sky-400/16"
 								>
 									Back to Sky View
@@ -856,7 +943,7 @@ function App() {
 							</div>
 
 							{hasBirthInput ? (
-								<LocationCard />
+								<LocationCard onOpenSkyView={handleOpenSkyViewFromEarth} />
 							) : (
 								<div className="panel flex min-h-[18rem] items-center justify-center px-6 py-10 text-center">
 									<div className="max-w-lg">

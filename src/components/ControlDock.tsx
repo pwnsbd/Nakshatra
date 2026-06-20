@@ -255,7 +255,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 	const resetCamera = useNakshatraStore((state) => state.resetCamera);
 
 	const liveDisabled = useMemo(
-		() => mode === "live" && !birthSnapshot,
+		() => mode === "returning-live" || (mode === "live" && !birthSnapshot),
 		[mode, birthSnapshot],
 	);
 
@@ -340,7 +340,11 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 								Control dock
 							</p>
 							<p className="mt-1 text-xs uppercase tracking-[0.28em] text-sky-100/80">
-								{mode === "birth-snapshot" ? "Snapshot mode" : "Live mode"}
+								{mode === "birth-snapshot"
+									? "Snapshot mode"
+									: mode === "returning-live"
+										? "Returning to live"
+										: "Live mode"}
 							</p>
 						</div>
 						<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-slate-300">
@@ -387,7 +391,13 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 					</div>
 
 					<div className="mt-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-slate-400 sm:hidden">
-						<span>{mode === "birth-snapshot" ? "Snapshot" : "Live"}</span>
+						<span>
+							{mode === "birth-snapshot"
+								? "Snapshot"
+								: mode === "returning-live"
+									? "Returning"
+									: "Live"}
+						</span>
 						<button
 							type="button"
 							onClick={() => setSettingsOpen((open) => !open)}

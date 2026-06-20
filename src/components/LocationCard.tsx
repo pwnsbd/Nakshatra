@@ -6,7 +6,11 @@ function formatCoordinate(value: number, positive: string, negative: string) {
 	return `${Math.abs(value).toFixed(4)}° ${direction}`;
 }
 
-function LocationCard() {
+type LocationCardProps = {
+	onOpenSkyView?: () => void;
+};
+
+function LocationCard({ onOpenSkyView }: LocationCardProps) {
 	const birthInput = useNakshatraStore((state) => state.birthInput);
 	const birthDetails = useNakshatraStore((state) => state.birthDetails);
 
@@ -84,14 +88,23 @@ function LocationCard() {
 					</div>
 				</div>
 
-				<a
-					href={mapsUrl}
-					target="_blank"
-					rel="noreferrer"
-					className="mt-4 inline-flex w-full items-center justify-center rounded-[1rem] border border-sky-300/25 bg-[linear-gradient(135deg,rgba(56,189,248,0.2),rgba(59,130,246,0.14))] px-4 py-2.5 text-sm font-semibold tracking-[0.14em] text-sky-50 shadow-[0_14px_32px_rgba(14,165,233,0.14)] transition hover:border-sky-200/40 hover:bg-[linear-gradient(135deg,rgba(56,189,248,0.3),rgba(59,130,246,0.2))]"
-				>
-					View on Map
-				</a>
+				<div className="mt-4 grid gap-2 sm:grid-cols-2">
+					<button
+						type="button"
+						onClick={onOpenSkyView}
+						className="inline-flex w-full items-center justify-center rounded-[1rem] border border-amber-300/25 bg-[linear-gradient(135deg,rgba(251,191,36,0.18),rgba(249,115,22,0.14))] px-4 py-2.5 text-sm font-semibold tracking-[0.14em] text-amber-50 shadow-[0_14px_32px_rgba(245,158,11,0.12)] transition hover:border-amber-200/40 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.28),rgba(249,115,22,0.2))]"
+					>
+						See Sky View
+					</button>
+					<a
+						href={mapsUrl}
+						target="_blank"
+						rel="noreferrer"
+						className="inline-flex w-full items-center justify-center rounded-[1rem] border border-sky-300/25 bg-[linear-gradient(135deg,rgba(56,189,248,0.2),rgba(59,130,246,0.14))] px-4 py-2.5 text-sm font-semibold tracking-[0.14em] text-sky-50 shadow-[0_14px_32px_rgba(14,165,233,0.14)] transition hover:border-sky-200/40 hover:bg-[linear-gradient(135deg,rgba(56,189,248,0.3),rgba(59,130,246,0.2))]"
+					>
+						View on Map
+					</a>
+				</div>
 			</div>
 		</section>
 	);
