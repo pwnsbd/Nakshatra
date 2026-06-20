@@ -11,6 +11,7 @@ type DockButtonProps = {
 	onClick: () => void;
 	pressed?: boolean;
 	compact?: boolean;
+	tooltipLeft?: boolean;
 };
 
 type ActionButtonProps = {
@@ -19,6 +20,7 @@ type ActionButtonProps = {
 	onClick: () => void;
 	disabled?: boolean;
 	compact?: boolean;
+	tooltipLeft?: boolean;
 };
 
 type ControlDockProps = {
@@ -33,6 +35,7 @@ function DockButton({
 	onClick,
 	pressed,
 	compact = false,
+	tooltipLeft = false,
 }: DockButtonProps) {
 	return (
 		<button
@@ -45,7 +48,13 @@ function DockButton({
 		>
 			<span className="control-dock-icon">{icon}</span>
 			<span className="control-dock-label">{label}</span>
-			{compact ? <span className="control-dock-tooltip">{label}</span> : null}
+			{compact ? (
+				<span
+					className={`control-dock-tooltip ${tooltipLeft ? "control-dock-tooltip-left" : ""}`}
+				>
+					{label}
+				</span>
+			) : null}
 		</button>
 	);
 }
@@ -56,6 +65,7 @@ function ActionButton({
 	onClick,
 	disabled = false,
 	compact = false,
+	tooltipLeft = false,
 }: ActionButtonProps) {
 	return (
 		<button
@@ -68,7 +78,13 @@ function ActionButton({
 		>
 			{icon ? <span className="control-dock-icon">{icon}</span> : null}
 			<span className={compact ? "sr-only" : ""}>{label}</span>
-			{compact ? <span className="control-dock-tooltip">{label}</span> : null}
+			{compact ? (
+				<span
+					className={`control-dock-tooltip ${tooltipLeft ? "control-dock-tooltip-left" : ""}`}
+				>
+					{label}
+				</span>
+			) : null}
 		</button>
 	);
 }
@@ -232,6 +248,7 @@ function ReturnToLiveIcon() {
 
 function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const tooltipLeft = compact && vertical;
 	const mode = useNakshatraStore((state): NakshatraState["mode"] => state.mode);
 	const birthSnapshot = useNakshatraStore((state) => state.birthSnapshot);
 	const showLabels = useNakshatraStore((state) => state.showLabels);
@@ -274,6 +291,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 						pressed={showOrbits}
 						onClick={toggleOrbits}
 						compact
+						tooltipLeft={tooltipLeft}
 					/>
 					<DockButton
 						label="Planets"
@@ -282,6 +300,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 						pressed={showPlanets}
 						onClick={togglePlanets}
 						compact
+						tooltipLeft={tooltipLeft}
 					/>
 					<DockButton
 						label="Stars"
@@ -290,6 +309,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 						pressed={showStars}
 						onClick={toggleStars}
 						compact
+						tooltipLeft={tooltipLeft}
 					/>
 					<DockButton
 						label="Labels"
@@ -298,6 +318,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 						pressed={showLabels}
 						onClick={toggleLabels}
 						compact
+						tooltipLeft={tooltipLeft}
 					/>
 					<DockButton
 						label="Settings"
@@ -306,6 +327,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 						pressed={settingsOpen}
 						onClick={() => setSettingsOpen((open) => !open)}
 						compact
+						tooltipLeft={tooltipLeft}
 					/>
 					{settingsOpen ? (
 						<button
@@ -323,6 +345,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 						icon={<ResetCameraIcon />}
 						onClick={resetCamera}
 						compact
+						tooltipLeft={tooltipLeft}
 					/>
 					<ActionButton
 						label="Return to Live"
@@ -330,6 +353,7 @@ function ControlDock({ compact = false, vertical = false }: ControlDockProps) {
 						onClick={returnToLive}
 						disabled={liveDisabled}
 						compact
+						tooltipLeft={tooltipLeft}
 					/>
 				</div>
 			) : (

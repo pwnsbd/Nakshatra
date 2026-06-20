@@ -31,21 +31,6 @@ type SurfaceView = "sky" | "earth";
 
 const ACTIVE_VIEW_STORAGE_KEY = "nakshatra-active-view";
 
-function describeViewportMode(mode: AppMode) {
-	switch (mode) {
-		case "rewinding":
-			return "Rewinding to birth snapshot";
-		case "returning-live":
-			return "Returning to live sky";
-		case "birth-snapshot":
-			return "Birth snapshot locked";
-		case "error":
-			return "Scene error";
-		default:
-			return "Live celestial viewport";
-	}
-}
-
 function toSnapshotTimestampUtc(
 	mode: AppMode,
 	timelineProgress: number,
@@ -287,6 +272,7 @@ function App() {
 	const [isMobileLayout, setIsMobileLayout] = useState(false);
 	const autoHiddenLabelsRef = useRef(false);
 	const [currentUtc, setCurrentUtc] = useState(() => new Date().toISOString());
+	const [isScaleInfoOpen, setIsScaleInfoOpen] = useState(false);
 	const [viewportStatus, setViewportStatus] = useState<ViewportStatus | null>({
 		message: "Preparing solar system…",
 		tone: "loading",
@@ -765,15 +751,17 @@ function App() {
 		}
 	}
 
+	function handleScaleInfoToggle() {
+		setIsScaleInfoOpen((current) => !current);
+	}
+
 	return (
 		<main
 			className={`min-h-screen overflow-hidden bg-[#030712] text-slate-100 ${
 				reducedMotionEnabled ? "reduced-motion" : ""
 			}`}
 		>
-			<div
-				className={`relative flex min-h-screen w-full flex-col px-2.5 py-2.5 sm:px-3.5 sm:py-3.5 lg:px-4 ${isMobileLayout && activeView === "sky" ? "main-mobile-safe-space" : ""}`}
-			>
+			<div className="relative flex min-h-screen w-full flex-col px-2.5 py-2.5 sm:px-3.5 sm:py-3.5 lg:px-4">
 				<div className="cosmic-backdrop absolute inset-0" />
 				<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.12),_transparent_30%),radial-gradient(circle_at_75%_35%,_rgba(99,102,241,0.12),_transparent_24%)]" />
 				<div className="pointer-events-none absolute inset-x-[8%] top-[8%] h-[32rem] rounded-full bg-[radial-gradient(circle,_rgba(59,130,246,0.09),_transparent_68%)] blur-3xl" />
@@ -869,8 +857,7 @@ function App() {
 								) : null}
 								<div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,_rgba(15,23,42,0.02),_rgba(2,6,23,0.5))]" />
 								<div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),transparent)]" />
-								<div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 p-4 text-[10px] uppercase tracking-[0.3em] text-slate-300/75 sm:p-5 sm:text-[11px] sm:tracking-[0.35em]">
-									<span className="pt-2">Celestial viewport</span>
+								<div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-end gap-4 p-4 text-[10px] uppercase tracking-[0.3em] text-slate-300/75 sm:p-5 sm:text-[11px] sm:tracking-[0.35em]">
 									<div className="flex items-start gap-3">
 										{!isMobileLayout ? (
 											<span className="pt-2">{mode}</span>
@@ -878,26 +865,38 @@ function App() {
 										<CompassRose headingDegrees={headingDegrees} />
 									</div>
 								</div>
-								<div className="pointer-events-none absolute bottom-4 left-4 z-20 rounded-full border border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.72),rgba(2,6,23,0.54))] px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-sky-200/80 shadow-[0_12px_32px_rgba(2,6,23,0.36)] sm:bottom-5 sm:left-5 sm:px-4 sm:text-xs sm:tracking-[0.3em]">
-									{describeViewportMode(mode)}
-								</div>
-								<div className="pointer-events-none absolute bottom-4 right-4 z-20 max-w-[18rem] rounded-[1.1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.82),rgba(2,6,23,0.62))] px-3 py-2.5 text-[10px] leading-5 text-slate-200/82 shadow-[0_12px_32px_rgba(2,6,23,0.36)] sm:bottom-5 sm:right-5 sm:px-4 sm:text-[11px]">
-									<span className="block uppercase tracking-[0.26em] text-sky-200/78">
-										Artistic scale
-									</span>
-									Planet sizes and distances are intentionally stylized for
-									clarity.
-								</div>
-								{isMobileLayout ? (
-									<div className="absolute inset-x-3 bottom-3 z-20 space-y-3 sm:hidden">
-										<TimelineScrubber
-											currentUtc={currentUtc}
-											activeTimestampUtc={activeTimestampUtc}
-										/>
-										<ControlDock />
+								<div className="group absolute bottom-4 right-4 z-20 sm:bottom-5 sm:right-5">
+									<button
+										type="button"
+										onClick={handleScaleInfoToggle}
+										className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.82),rgba(2,6,23,0.62))] text-sm font-semibold text-sky-200/78 shadow-[0_12px_32px_rgba(2,6,23,0.36)] transition hover:border-sky-300/30 hover:text-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/55 sm:h-10 sm:w-10"
+										aria-expanded={isScaleInfoOpen}
+										aria-label="About artistic scale"
+									>
+										i
+									</button>
+									<div
+										className={`pointer-events-none absolute bottom-full right-0 mb-2 w-[16rem] rounded-[1.1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.94),rgba(2,6,23,0.78))] px-3 py-2.5 text-[10px] leading-5 text-slate-200/82 shadow-[0_12px_32px_rgba(2,6,23,0.36)] transition duration-200 sm:px-4 sm:text-[11px] ${
+											isScaleInfoOpen
+												? "opacity-100 translate-y-0"
+												: "translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
+										}`}
+									>
+										Planet sizes and distances are intentionally stylized for
+										clarity.
 									</div>
-								) : null}
+								</div>
 							</section>
+
+							{isMobileLayout ? (
+								<div className="mobile-bottom-sheet space-y-3 sm:hidden">
+									<TimelineScrubber
+										currentUtc={currentUtc}
+										activeTimestampUtc={activeTimestampUtc}
+									/>
+									<ControlDock />
+								</div>
+							) : null}
 
 							{!isMobileLayout ? (
 								<>

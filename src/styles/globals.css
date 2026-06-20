@@ -595,6 +595,8 @@ select::-ms-expand {
 	display: flex;
 	height: 100%;
 	align-items: stretch;
+	position: relative;
+	z-index: 40;
 }
 
 .control-dock-tooltip {
@@ -602,7 +604,7 @@ select::-ms-expand {
 	position: absolute;
 	left: calc(100% + 0.7rem);
 	top: 50%;
-	z-index: 20;
+	z-index: 60;
 	transform: translateY(-50%) translateX(-0.25rem);
 	border-radius: 999px;
 	border: 1px solid rgba(125, 211, 252, 0.24);
@@ -619,6 +621,12 @@ select::-ms-expand {
 	transition:
 		opacity 180ms ease,
 		transform 180ms ease;
+}
+
+.control-dock-tooltip-left {
+	left: auto;
+	right: calc(100% + 0.7rem);
+	transform: translateY(-50%) translateX(0.25rem);
 }
 
 .control-dock-tooltip-trigger:hover .control-dock-tooltip,
