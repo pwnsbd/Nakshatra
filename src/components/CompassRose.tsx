@@ -19,9 +19,6 @@ function CompassRose({ headingDegrees, className = "" }: CompassRoseProps) {
 				<span className="text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-200/88">
 					Orientation
 				</span>
-				<span className="text-[10px] uppercase tracking-[0.28em] text-sky-200/72">
-					True north
-				</span>
 			</div>
 
 			<div className="relative grid h-28 w-28 place-items-center rounded-full border border-sky-300/22 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.18),_rgba(2,6,23,0.12)_38%,_rgba(2,6,23,0.75)_100%)] shadow-[inset_0_0_40px_rgba(56,189,248,0.09),0_0_22px_rgba(56,189,248,0.08)]">
