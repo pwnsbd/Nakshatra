@@ -20,14 +20,25 @@ export function createPlanetMesh(
 
 	switch (kind) {
 		case "sun": {
+			const map = getSunTexture();
 			const core = new THREE.Mesh(
 				new THREE.SphereGeometry(radius, 48, 48),
-				new THREE.MeshStandardMaterial({
+				new THREE.MeshPhysicalMaterial({
 					color: 0xfbbf24,
+					map,
 					emissive: 0xff8c1a,
+					emissiveMap: map,
 					emissiveIntensity: 2.8,
-					roughness: 0.45,
-					metalness: 0.02,
+					normalMap: getNormalMapFromTexture("planet-sun-normal", map, 0.52),
+					roughnessMap: getRoughnessMapFromTexture(
+						"planet-sun-roughness",
+						map,
+						(luminance) => 72 + (255 - luminance) * 0.18,
+					),
+					roughness: 0.72,
+					metalness: 0,
+					clearcoat: 0.08,
+					clearcoatRoughness: 0.84,
 				}),
 			);
 
@@ -241,6 +252,54 @@ function addLatitudeBand(
 	band.position.y = radius * heightFactor;
 	band.rotation.x = Math.PI / 2;
 	group.add(band);
+}
+
+function getSunTexture() {
+	return getCanvasTexture("planet-sun", 1024, 512, (context, width, height) => {
+		fillGradient(context, width, height, "#fff2b8", "#f97316");
+
+		for (let band = 0; band < 24; band += 1) {
+			const y = (band / 24) * height;
+			const amplitude = randomRange(band * 31 + 1, 8, 28);
+			const thickness = randomRange(band * 31 + 5, 14, 34);
+			context.fillStyle = `rgba(255, ${Math.round(randomRange(band * 31 + 9, 150, 220))}, ${Math.round(randomRange(band * 31 + 11, 40, 120))}, ${randomRange(band * 31 + 13, 0.1, 0.26).toFixed(3)})`;
+			context.beginPath();
+			context.moveTo(0, y);
+			for (let x = 0; x <= width; x += 14) {
+				const waveY =
+					y +
+					Math.sin(x * 0.017 + band * 0.9) * amplitude +
+					Math.cos(x * 0.006 + band * 0.42) * amplitude * 0.55;
+				context.lineTo(x, waveY);
+			}
+			context.lineTo(width, y + thickness);
+			context.lineTo(0, y + thickness);
+			context.closePath();
+			context.fill();
+		}
+
+		for (let index = 0; index < 160; index += 1) {
+			const x = randomRange(index * 17 + 1, 0, width);
+			const y = randomRange(index * 17 + 3, 0, height);
+			const radius = randomRange(index * 17 + 5, 8, 42);
+			const flare = context.createRadialGradient(x, y, 0, x, y, radius);
+			flare.addColorStop(
+				0,
+				`rgba(255, 251, 235, ${randomRange(index * 17 + 7, 0.22, 0.48).toFixed(3)})`,
+			);
+			flare.addColorStop(
+				0.38,
+				`rgba(253, 186, 116, ${randomRange(index * 17 + 9, 0.14, 0.28).toFixed(3)})`,
+			);
+			flare.addColorStop(1, "rgba(249, 115, 22, 0)");
+			context.fillStyle = flare;
+			context.beginPath();
+			context.arc(x, y, radius, 0, Math.PI * 2);
+			context.fill();
+		}
+
+		addVignette(context, width, height, 0.05);
+	});
 }
 
 function getMercuryTexture() {

@@ -261,7 +261,7 @@ export default function BirthForm({
 								applyPreset(event.target.value);
 								event.currentTarget.value = "";
 							}}
-							className="birth-input min-w-0 px-2.5 py-2 text-[13px]"
+							className="birth-input themed-select themed-select-input min-w-0 px-2.5 py-2 pr-10 text-[13px]"
 						>
 							<option value="">Choose city</option>
 							{LOCATION_PRESETS.map((preset) => (
