@@ -88,3 +88,29 @@ button:focus-visible, input:focus-visible { outline: 1px solid #c7a47c; outline-
  .about-copy { position: fixed; left: 22px; right: 22px; bottom: 120px; max-width: none; padding: 20px; background: #181a16; border: 1px solid #48473e; z-index: 10; }
 }
 .birth-dialog .calculation-error { position: static; }
+/* A deeper sky surrounds the warm, quiet typography. */
+body { background: #080d15; }
+.instrument-shell {
+ background:
+  radial-gradient(ellipse at 77% 38%, rgba(53,80,119,.18), transparent 46%),
+  radial-gradient(ellipse at 53% 70%, rgba(91,62,96,.12), transparent 45%),
+  radial-gradient(ellipse at 72% 51%, rgba(146,105,58,.07), transparent 24%), #080d15;
+}
+.instrument-shell::before {
+ content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .48;
+ background-image: radial-gradient(1px 1px at 13% 18%, #d8e6f5 60%, transparent), radial-gradient(1px 1px at 67% 72%, #abbedc 60%, transparent), radial-gradient(1px 1px at 36% 57%, #ecdbc5 60%, transparent), radial-gradient(1px 1px at 83% 29%, #d8e6f5 60%, transparent);
+ background-size: 237px 211px, 359px 317px, 421px 283px, 541px 373px;
+ mask-image: linear-gradient(90deg, transparent, #000 45%);
+}
+.instrument-disk { inset: 8vh 3vw 12vh 27vw; }
+.planet-key { right: 5vw; top: auto; bottom: 105px; display: flex; flex-wrap: wrap; max-width: 530px; gap: 12px 22px; transform: none; }
+.longitude-readout { flex-basis: 100%; text-align: right; }
+.intro { color: #a3a8b0; }
+.planet-key-item { color: #b2b7c0; }
+.time-caption { color: #939aa6; }
+@media (max-width: 760px) {
+ .instrument-disk { inset: 27vh 0 28vh 0; opacity: 1; }
+ .planet-key { left: 26px; right: 26px; bottom: 235px; justify-content: center; gap: 12px 20px; }
+ .longitude-readout { text-align: center; margin-left: 0; }
+ .instrument-shell::before { mask-image: linear-gradient(180deg, transparent, #000 35%); }
+}

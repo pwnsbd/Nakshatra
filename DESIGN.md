@@ -18,3 +18,6 @@ The active experience is App.tsx, three/CelestialInstrument.ts, styles/instrumen
 ## Verification
 
 Production TypeScript/Vite build passes. Browser checks covered desktop and 390px phone layout, form submission using sample data, exact arrival at 15 June 1994 08:30 Asia/Kathmandu, planetary longitude selection, keyboard scrubbing, and return to live. Vite reports a large JavaScript bundle (about 840 kB before gzip). Reduced-motion and WebGL fallback branches were inspected in source, not device-tested.
+
+## Planet visibility refinement
+The scene now uses larger procedural planet surfaces, Saturn's rings, directional lighting, a soft solar halo and layered stars against a blue-black sky. Camera framing and the planet key were adjusted for desktop and phone widths. Surface markings are artistic illustrations, not observational maps. Astronomical positions are unchanged.
